@@ -1,29 +1,34 @@
 {
-    "posts": [
-        {
-            "id": "1",
-            "title": "a title",
-            "views": 100
-        },
-        {
-            "id": "2",
-            "title": "another title",
-            "views": 200
-        }
-    ],
-    "comments": [
-        {
-            "id": "1",
-            "text": "a comment about post 1",
-            "postId": "1"
-        },
-        {
-            "id": "2",
-            "text": "another comment about post 1",
-            "postId": "1"
-        }
-    ],
-    "profile": {
-        "name": "typicode"
-    }
+  "budgetEntry": [
+    {
+      "id": "d000",
+      "amount": 40000,
+      "description": "40000",
+      "date": "2024-10-23",
+      "category": "Housing",
+      "paymentMethod": "Debit Card",
+      "notes": "",
+      "status": "Completed"
+    },
+    {
+        "id": "d000",
+        "amount": 50000,
+        "description": "40000",
+        "date": "2024-10-23",
+        "category": "Housing",
+        "paymentMethod": "Debit Card",
+        "notes": "",
+        "status": "Completed"
+      },
+      {
+        "id": "d000",
+        "amount": 5000,
+        "description": "40000",
+        "date": "2024-10-23",
+        "category": "Entertainment",
+        "paymentMethod": "Debit Card",
+        "notes": "",
+        "status": "Completed"
+      }
+  ]
 }
