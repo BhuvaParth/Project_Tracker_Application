@@ -1,5 +1,4 @@
-import axios from "axios";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -109,7 +108,7 @@ export const AddBudget = () => {
     return errors;
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
 
     const errors = validateForm();
@@ -118,7 +117,7 @@ export const AddBudget = () => {
       return;
     }
 
-    const newFinancialEntry = {
+    const newbudgetEntry = {
       amount: Number(amount),
       description,
       date,
@@ -128,21 +127,13 @@ export const AddBudget = () => {
       status,
     };
 
-    try {
-      const response = await axios.post(
-        "http://localhost:3000/budgetEntry",
-        newFinancialEntry
-      );
-      if (response.status === 201) {
-        toast.success("Budget entry created successfully!");
-        setTransactions([...transactions, newFinancialEntry]);
-        resetForm();
-        navigate("/");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to create financial entry.");
-    }
+    const existingEntries = JSON.parse(localStorage.getItem("budgetEntries")) || [];
+    localStorage.setItem("budgetEntries", JSON.stringify([...existingEntries, newbudgetEntry]));
+
+    toast.success("Budget entry created successfully!");
+    setTransactions([...transactions, newbudgetEntry]);
+    resetForm();
+    navigate("/");
   };
 
   const resetForm = () => {
@@ -157,115 +148,113 @@ export const AddBudget = () => {
   };
 
   return (
-    <>
-      <Container>
-        <Title>Create Budget Entry</Title>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Amount:
-            </label>
-            <Input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              min="0"
-            />
-            {validationErrors.amount && (
-              <ErrorMessage>{validationErrors.amount}</ErrorMessage>
-            )}
-          </div>
+    <Container>
+      <Title>Create Budget Entry</Title>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">
+            Amount:
+          </label>
+          <Input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            min="0"
+          />
+          {validationErrors.amount && (
+            <ErrorMessage>{validationErrors.amount}</ErrorMessage>
+          )}
+        </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Description:
-            </label>
-            <TextArea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-            {validationErrors.description && (
-              <ErrorMessage>{validationErrors.description}</ErrorMessage>
-            )}
-          </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">
+            Description:
+          </label>
+          <TextArea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+          {validationErrors.description && (
+            <ErrorMessage>{validationErrors.description}</ErrorMessage>
+          )}
+        </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Date:
-            </label>
-            <Input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-            {validationErrors.date && (
-              <ErrorMessage>{validationErrors.date}</ErrorMessage>
-            )}
-          </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">
+            Date:
+          </label>
+          <Input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+          {validationErrors.date && (
+            <ErrorMessage>{validationErrors.date}</ErrorMessage>
+          )}
+        </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Category:
-            </label>
-            <Select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              <option value="">Select a category</option>
-              <option value="Food">Food</option>
-              <option value="Bills">Bills</option>
-              <option value="Housing">Housing</option>
-              <option value="Entertainment">Entertainment</option>
-              <option value="Transport">Transport</option>
-              <option value="Savings">Savings</option>
-              <option value="Other">Other</option>
-            </Select>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">
+            Category:
+          </label>
+          <Select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="">Select a category</option>
+            <option value="Food">Food</option>
+            <option value="Bills">Bills</option>
+            <option value="Housing">Housing</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Transport">Transport</option>
+            <option value="Savings">Savings</option>
+            <option value="Other">Other</option>
+          </Select>
 
-            {validationErrors.category && (
-              <ErrorMessage>{validationErrors.category}</ErrorMessage>
-            )}
-          </div>
+          {validationErrors.category && (
+            <ErrorMessage>{validationErrors.category}</ErrorMessage>
+          )}
+        </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Status:
-            </label>
-            <Select value={status} onChange={(e) => setStatus(e.target.value)}>
-              <option value="">Select a status</option>
-              <option value="Not Started">Not Started</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
-              <option value="On Hold">On Hold</option>
-              <option value="Cancelled">Cancelled</option>
-            </Select>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">
+            Status:
+          </label>
+          <Select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="">Select a status</option>
+            <option value="Not Started">Not Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+            <option value="On Hold">On Hold</option>
+            <option value="Cancelled">Cancelled</option>
+          </Select>
 
-            {validationErrors.status && (
-              <ErrorMessage>{validationErrors.status}</ErrorMessage>
-            )}
-          </div>
+          {validationErrors.status && (
+            <ErrorMessage>{validationErrors.status}</ErrorMessage>
+          )}
+        </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Payment Method:
-            </label>
-            <Select
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-            >
-              <option value="">Select a payment method</option>
-              <option value="Credit Card">Credit Card</option>
-              <option value="Debit Card">Debit Card</option>
-              <option value="Cash">Cash</option>
-              <option value="Bank Transfer">Bank Transfer</option>
-            </Select>
-            {validationErrors.paymentMethod && (
-              <ErrorMessage>{validationErrors.paymentMethod}</ErrorMessage>
-            )}
-          </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">
+            Payment Method:
+          </label>
+          <Select
+            value={paymentMethod}
+            onChange={(e) => setPaymentMethod(e.target.value)}
+          >
+            <option value="">Select a payment method</option>
+            <option value="Credit Card">Credit Card</option>
+            <option value="Debit Card">Debit Card</option>
+            <option value="Cash">Cash</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+          </Select>
+          {validationErrors.paymentMethod && (
+            <ErrorMessage>{validationErrors.paymentMethod}</ErrorMessage>
+          )}
+        </div>
 
-          <Button type="submit">Submit</Button>
-        </form>
-      </Container>
-    </>
+        <Button type="submit">Submit</Button>
+      </form>
+    </Container>
   );
 };

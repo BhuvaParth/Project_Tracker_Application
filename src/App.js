@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import { ToastContainer } from "react-toastify";
 import Navbar from "./componets/Navbar";
 import { AddBudget } from "./componets/AddBudget";
+import EditBudget from "./componets/EditBudget";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/addbudget" element={<AddBudget />} />
+          <Route path="/editbudget" element={<EditBudget />} />
         </Routes>
       </div>
     </>

@@ -1,27 +1,28 @@
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
+  ArcElement,
   Title,
   Tooltip,
   Legend,
-  ArcElement
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  BarController,
 } from "chart.js";
-import { useEffect, useState } from "react";
-import { Bar, Pie } from "react-chartjs-2";
-import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 ChartJS.register(
-  BarElement,
-  CategoryScale,
-  LinearScale,
+  ArcElement,
   Title,
   Tooltip,
   Legend,
-  ArcElement 
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  BarController
 );
 
 const Container = styled.div`
@@ -95,52 +96,39 @@ const TableCell = styled.td`
 
   &:last-child {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.5rem; /* Space between action buttons */
   }
 `;
 
-const ActionButton = styled.button`
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  color: white;
-  font-weight: 500;
-  cursor: pointer;
+const ActionButton = ({ className, isPending, ...props }) => {
+  return (
+    <button
+      className={className}
+      style={{
+        padding: '0.5rem 1rem',
+        borderRadius: '0.375rem',
+        color: 'white',
+        fontWeight: 500,
+        cursor: 'pointer',
+        backgroundColor: isPending ? '#3182ce' : '#48bb78', // Default background
+      }}
+      {...props} 
+    >
+      {props.children} 
+    </button>
+  );
+};
 
-  &.edit {
-    background-color: #4299e1;
-    &:hover {
-      background-color: #3182ce;
-    }
-  }
-
-  &.delete {
-    background-color: #e53e3e;
-    &:hover {
-      background-color: #c53030;
-    }
-  }
-
-  &.toggle {
-    background-color: ${(props) => (props.$isPending ? "#3182ce" : "#48bb78")};
-    &:hover {
-      background-color: ${(props) =>
-        props.$isPending ? "#2b6cb0" : "#38a169"};
-    }
-  }
-`;
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchTransactions = async () => {
-    try {
-      const response = await axios.get("http://localhost:3000/budgetEntry");
-      setTransactions(response.data);
-    } catch (error) {
-      console.error("Error fetching transactions:", error);
-    }
+  const fetchTransactions = () => {
+    const storedTransactions =
+      JSON.parse(localStorage.getItem("budgetEntries")) || [];
+    setTransactions(storedTransactions);
   };
 
   useEffect(() => {
@@ -148,34 +136,35 @@ const Dashboard = () => {
   }, []);
 
   const handleEditClick = (transaction) => {
-    navigate("/editfinacialform", { state: { transaction } });
+    navigate("/editbudget", { state: { transaction } });
   };
 
-  const handleDeleteClick = async (id) => {
-    try {
-      await axios.delete(`http://localhost:3000/budgetEntry/${id}`);
-      fetchTransactions();
-    } catch (error) {
-      console.error("Error deleting transaction:", error);
-    }
+  const handleDeleteClick = (transactionId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this transaction?"
+    );
+    if (!confirmDelete) return;
+
+    const updatedTransactions = transactions.filter(
+      (t) => t.id !== transactionId
+    );
+    localStorage.setItem("budgetEntries", JSON.stringify(updatedTransactions));
+    fetchTransactions();
   };
 
-  const handleTogglePending = async (id) => {
-    try {
-      const transaction = transactions.find((t) => t.id === id);
-      const updatedTransaction = {
-        ...transaction,
-        status: transaction.status === "Pending" ? "Completed" : "Pending",
-      };
+  const handleTogglePending = (transactionId) => {
+    const updatedTransactions = transactions.map((transaction) => {
+      if (transaction.id === transactionId) {
+        return {
+          ...transaction,
+          status: transaction.status === "Pending" ? "Completed" : "Pending",
+        };
+      }
+      return transaction;
+    });
 
-      await axios.put(
-        `http://localhost:3000/budgetEntry/${id}`,
-        updatedTransaction
-      );
-      fetchTransactions();
-    } catch (error) {
-      console.error("Error updating transaction status:", error);
-    }
+    localStorage.setItem("budgetEntries", JSON.stringify(updatedTransactions));
+    fetchTransactions();
   };
 
   const filteredTransactions = transactions.filter((transaction) => {
@@ -194,62 +183,37 @@ const Dashboard = () => {
     );
   });
 
-  const totalSpending = filteredTransactions.reduce(
-    (sum, transaction) => sum + transaction.amount,
-    0
-  );
+  const totalSpending = filteredTransactions.reduce((sum, transaction) => {
+    const amount = parseFloat(transaction.amount);
+    return sum + (isNaN(amount) ? 0 : amount);
+  }, 0);
 
   const categories = [...new Set(filteredTransactions.map((t) => t.category))];
-  const categoryData = categories.map((category) =>
-    filteredTransactions
-      .filter((t) => t.category === category)
-      .reduce((sum, t) => sum + t.amount, 0)
-  );
+  // const categoryData = categories.map((category) =>
+  //   filteredTransactions
+  //     .filter((t) => t.category === category)
+  //     .reduce((sum, t) => sum + t.amount, 0)
+  // );
 
-  // const pieData = {
-  //   labels: categories,
-  //   datasets: [
-  //     {
-  //       label: "Spending by Category",
-  //       data: categoryData,
-  //       backgroundColor: [
-  //         "rgba(255, 99, 132, 0.6)",
-  //         "rgba(54, 162, 235, 0.6)",
-  //         "rgba(255, 206, 86, 0.6)",
-  //         "rgba(75, 192, 192, 0.6)",
-  //         "rgba(153, 102, 255, 0.6)",
-  //         "rgba(255, 159, 64, 0.6)",
-  //       ],
-  //     },
-  //   ],
-  // };
+  const BarChart = ({ filteredTransactions }) => {
+    const categoryAmounts = filteredTransactions.reduce((acc, transaction) => {
+      if (!acc[transaction.category]) {
+        acc[transaction.category] = 0;
+      }
+      acc[transaction.category] += transaction.amount;
+      return acc;
+    }, {});
 
-  // const pieOptions = {
-  //   responsive: true,
-  //   plugins: {
-  //     legend: {
-  //       position: "top",
-  //     },
-  //     title: {
-  //       display: true,
-  //       text: "Spending by Category",
-  //     },
-  //   },
-  // };
+    const labels = Object.keys(categoryAmounts);
+    const dataValues = Object.values(categoryAmounts);
 
-  const BarChart = () => {
     const data = {
-      labels: ["M", "T", "W", "T", "F", "S", "S"],
+      labels,
       datasets: [
         {
-          label: "Apples",
-          data: [12, 19, 3, 17, 28, 24, 7],
-          backgroundColor: "rgba(153, 255, 51, 1)",
-        },
-        {
-          label: "Oranges",
-          data: [30, 29, 5, 5, 20, 3, 10],
-          backgroundColor: "rgba(255, 153, 0, 1)",
+          label: "Total Amount by Category",
+          data: dataValues,
+          backgroundColor: "rgba(75, 192, 192, 1)",
         },
       ],
     };
@@ -262,7 +226,7 @@ const Dashboard = () => {
         },
         title: {
           display: true,
-          text: "Fruit Sales per Day",
+          text: "Spending by Category",
         },
       },
     };
@@ -271,100 +235,84 @@ const Dashboard = () => {
   };
 
   return (
-    <>
-      <Container>
-        <TitleText>Transactions List</TitleText>
+    <Container>
+      <TitleText>Transactions List</TitleText>
 
-        <TotalSpending>
-          Total Spending: ${totalSpending.toFixed(2)}
-        </TotalSpending>
+      <TotalSpending>Total Spending: ${totalSpending.toFixed(2)}</TotalSpending>
 
-        <ChartContainer>
-        <BarChart />
+      <ChartContainer>
+        <BarChart filteredTransactions={filteredTransactions} />
       </ChartContainer>
 
-      {/* <ChartContainer>
-        <Pie data={pieData} options={pieOptions} />
-      </ChartContainer> */}
+      <div>
+        <label
+          htmlFor="search"
+          style={{ display: "block", marginBottom: "0.5rem" }}
+        >
+          Search here
+        </label>
+        <SearchInput
+          id="search"
+          type="text"
+          placeholder="Search by Amount and Category here..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
 
-        <div>
-          <label
-            htmlFor="search"
-            style={{ display: "block", marginBottom: "0.5rem" }}
-          >
-            Search transactions by title, amount, date, category, or status:
-          </label>
-          <SearchInput
-            id="search"
-            type="text"
-            placeholder="Enter search term..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        <Table>
-          <thead>
-            <tr>
-              <TableHeader>Amount</TableHeader>
-              <TableHeader>Date</TableHeader>
-              <TableHeader>Category</TableHeader>
-              <TableHeader>Status</TableHeader>
-              <TableHeader>Description</TableHeader>
-              <TableHeader>Actions</TableHeader>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTransactions.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan="6"
-                  style={{ textAlign: "center", color: "#4A5568" }}
+      <Table>
+        <thead>
+          <tr>
+            <TableHeader>Amount</TableHeader>
+            <TableHeader>Date</TableHeader>
+            <TableHeader>Category</TableHeader>
+            <TableHeader>Status</TableHeader>
+            <TableHeader>Description</TableHeader>
+            <TableHeader>Actions</TableHeader>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredTransactions.map((transaction) => (
+            <TableRow key={`${transaction.id}-${transaction.date}`}>
+              <TableCell>
+                $
+                {isNaN(transaction.amount)
+                  ? "0.00"
+                  : parseFloat(transaction.amount).toFixed(2)}
+              </TableCell>
+              <TableCell>
+                {new Date(transaction.date).toLocaleDateString()}
+              </TableCell>
+              <TableCell>{transaction.category}</TableCell>
+              <TableCell>
+                <ActionButton
+                  className="toggle"
+                  isPending={transaction.status === "Pending"}
+                  onClick={() => handleTogglePending(transaction.id)}
                 >
-                  No transactions available.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredTransactions.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell>${transaction.amount.toFixed(2)}</TableCell>
-                  <TableCell>
-                    {new Date(transaction.date).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>{transaction.category}</TableCell>
-                  <TableCell>
-                    <ActionButton
-                      className="toggle"
-                      $isPending={transaction.status === "Pending"}
-                      onClick={() => handleTogglePending(transaction.id)}
-                    >
-                      {transaction.status === "Pending"
-                        ? "Complete"
-                        : "Pending"}
-                    </ActionButton>
-                  </TableCell>
-                  <TableCell>{transaction.description}</TableCell>
-                  <TableCell>
-                    <ActionButton
-                      className="edit"
-                      onClick={() => handleEditClick(transaction)}
-                    >
-                      Edit
-                    </ActionButton>
-                    <ActionButton
-                      className="delete"
-                      onClick={() => handleDeleteClick(transaction.id)}
-                    >
-                      Delete
-                    </ActionButton>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </Container>
-    </>
+                  {transaction.status === "Pending" ? "Complete" : "Pending"}
+                </ActionButton>
+              </TableCell>
+              <TableCell>{transaction.description}</TableCell>
+              <TableCell>
+                <ActionButton
+                  className="edit"
+                  onClick={() => handleEditClick(transaction)}
+                >
+                  Edit
+                </ActionButton>
+                <ActionButton
+                  className="delete"
+                  onClick={() => handleDeleteClick(transaction.id)}
+                >
+                  Delete
+                </ActionButton>
+              </TableCell>
+            </TableRow>
+          ))}
+        </tbody>
+      </Table>
+    </Container>
   );
 };
 
