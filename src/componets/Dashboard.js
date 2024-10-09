@@ -26,15 +26,19 @@ ChartJS.register(
 );
 
 const Container = styled.div`
-  max-width: 800px;
+  width: 100%;
+  max-width: 1200px;
   margin: 1.5rem auto;
   padding: 1rem;
+  background-color: #1a202c; 
+  color: #cbd5e0; 
+  border-radius: 0.375rem;
 `;
 
 const TitleText = styled.h2`
   font-size: 1.5rem;
   font-weight: bold;
-  color: #4a5568;
+  color: #edf2f7;
   text-align: center;
   margin-bottom: 1.5rem;
 `;
@@ -43,6 +47,7 @@ const TotalSpending = styled.h3`
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 1rem;
+  color: #edf2f7;
 `;
 
 const ChartContainer = styled.div`
@@ -57,6 +62,8 @@ const SearchInput = styled.input`
   width: 100%;
   padding: 0.5rem;
   margin-bottom: 1rem;
+  color: #4a5568;
+  background-color: #edf2f7;
 
   &:focus {
     outline: none;
@@ -67,58 +74,53 @@ const SearchInput = styled.input`
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
+  background-color: #2d3748; 
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-radius: 0.375rem;
   overflow: hidden;
+  overflow-x: auto; 
 `;
 
 const TableHeader = styled.th`
   padding: 0.75rem;
   border-bottom: 2px solid #e2e8f0;
-  background-color: #edf2f7;
+  background-color: #4a5568; 
   text-align: left;
   font-weight: bold;
-  color: #4a5568;
+  color: #edf2f7;
 `;
 
 const TableRow = styled.tr`
   &:hover {
-    background-color: #f7fafc;
+    background-color: #4a5568; 
   }
 `;
 
 const TableCell = styled.td`
   padding: 0.75rem;
   border-bottom: 1px solid #e2e8f0;
-  color: #4a5568;
+  color: #edf2f7; 
   font-size: 0.9rem;
 
   &:last-child {
     display: flex;
-    gap: 0.5rem; /* Space between action buttons */
+    gap: 0.5rem; 
   }
 `;
 
-const ActionButton = ({ className, isPending, ...props }) => {
-  return (
-    <button
-      className={className}
-      style={{
-        padding: '0.5rem 1rem',
-        borderRadius: '0.375rem',
-        color: 'white',
-        fontWeight: 500,
-        cursor: 'pointer',
-        backgroundColor: isPending ? '#3182ce' : '#48bb78', // Default background
-      }}
-      {...props} 
-    >
-      {props.children} 
-    </button>
-  );
-};
+const ActionButton = styled.button`
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  background-color: ${(props) =>
+    props.bgColor || "#48bb78"}; 
 
+  &:hover {
+    opacity: 0.9; 
+  }
+`;
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -188,13 +190,6 @@ const Dashboard = () => {
     return sum + (isNaN(amount) ? 0 : amount);
   }, 0);
 
-  const categories = [...new Set(filteredTransactions.map((t) => t.category))];
-  // const categoryData = categories.map((category) =>
-  //   filteredTransactions
-  //     .filter((t) => t.category === category)
-  //     .reduce((sum, t) => sum + t.amount, 0)
-  // );
-
   const BarChart = ({ filteredTransactions }) => {
     const categoryAmounts = filteredTransactions.reduce((acc, transaction) => {
       if (!acc[transaction.category]) {
@@ -236,7 +231,7 @@ const Dashboard = () => {
 
   return (
     <Container>
-      <TitleText>Transactions List</TitleText>
+      <TitleText>Budget List</TitleText>
 
       <TotalSpending>Total Spending: ${totalSpending.toFixed(2)}</TotalSpending>
 
@@ -247,7 +242,7 @@ const Dashboard = () => {
       <div>
         <label
           htmlFor="search"
-          style={{ display: "block", marginBottom: "0.5rem" }}
+          style={{ display: "block", marginBottom: "0.5rem", color: "#edf2f7" }}
         >
           Search here
         </label>
@@ -275,7 +270,7 @@ const Dashboard = () => {
           {filteredTransactions.map((transaction) => (
             <TableRow key={`${transaction.id}-${transaction.date}`}>
               <TableCell>
-                $
+                ${" "}
                 {isNaN(transaction.amount)
                   ? "0.00"
                   : parseFloat(transaction.amount).toFixed(2)}
@@ -287,7 +282,9 @@ const Dashboard = () => {
               <TableCell>
                 <ActionButton
                   className="toggle"
-                  isPending={transaction.status === "Pending"}
+                  bgColor={
+                    transaction.status === "Pending" ? "#3182ce" : "#48bb78"
+                  } 
                   onClick={() => handleTogglePending(transaction.id)}
                 >
                   {transaction.status === "Pending" ? "Complete" : "Pending"}
@@ -297,12 +294,14 @@ const Dashboard = () => {
               <TableCell>
                 <ActionButton
                   className="edit"
+                  bgColor="#3182ce" 
                   onClick={() => handleEditClick(transaction)}
                 >
                   Edit
                 </ActionButton>
                 <ActionButton
                   className="delete"
+                  bgColor="#e53e3e" 
                   onClick={() => handleDeleteClick(transaction.id)}
                 >
                   Delete

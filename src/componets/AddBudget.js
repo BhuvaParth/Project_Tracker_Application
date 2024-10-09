@@ -8,7 +8,7 @@ const Container = styled.div`
   max-width: 640px;
   margin: 2rem auto;
   padding: 1.5rem;
-  background-color: white;
+  background-color: #f7fafc;
   border-radius: 0.5rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 `;
@@ -117,7 +117,7 @@ export const AddBudget = () => {
       return;
     }
 
-    const newbudgetEntry = {
+    const newBudgetEntry = {
       amount: Number(amount),
       description,
       date,
@@ -127,11 +127,15 @@ export const AddBudget = () => {
       status,
     };
 
-    const existingEntries = JSON.parse(localStorage.getItem("budgetEntries")) || [];
-    localStorage.setItem("budgetEntries", JSON.stringify([...existingEntries, newbudgetEntry]));
+    const existingEntries =
+      JSON.parse(localStorage.getItem("budgetEntries")) || [];
+    localStorage.setItem(
+      "budgetEntries",
+      JSON.stringify([...existingEntries, newBudgetEntry])
+    );
 
     toast.success("Budget entry created successfully!");
-    setTransactions([...transactions, newbudgetEntry]);
+    setTransactions([...transactions, newBudgetEntry]);
     resetForm();
     navigate("/");
   };
@@ -148,7 +152,7 @@ export const AddBudget = () => {
   };
 
   return (
-    <Container>
+    <Container >
       <Title>Create Budget Entry</Title>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">

@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import styled from "styled-components";
 
-// Styled components
 const Container = styled.div`
   max-width: 600px;
   margin: 1.5rem auto;
@@ -79,7 +78,7 @@ const Button = styled.button`
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   cursor: pointer;
-  margin-right: 0.5rem; /* Space between buttons */
+  margin-right: 0.5rem;
 
   &:hover {
     background-color: #2b6cb0;
@@ -107,7 +106,7 @@ const EditBudget = () => {
       status,
     };
 
-    // Update localStorage
+
     const existingEntries =
       JSON.parse(localStorage.getItem("budgetEntries")) || [];
     const updatedEntries = existingEntries.map((entry) =>
@@ -140,7 +139,7 @@ const EditBudget = () => {
 
   return (
     <Container>
-      <Title>Edit Transaction</Title>
+      <Title>Edit Budget</Title>
       <Form onSubmit={handleSubmit}>
         <div>
           <Label htmlFor="amount">Amount:</Label>
@@ -179,8 +178,8 @@ const EditBudget = () => {
           >
             <option value="">Select a category</option>
             <option value="Food">Food</option>
-            <option value="Bills">Bills</option>
             <option value="Housing">Housing</option>
+            <option value="Bills">Bills</option>
             <option value="Entertainment">Entertainment</option>
             <option value="Transport">Transport</option>
             <option value="Savings">Savings</option>
