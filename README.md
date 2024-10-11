@@ -29,10 +29,6 @@ The Expense Tracker is a web application designed to help users manage their bud
 
 ## Installation
 
-### Go to Frontend folder and enter this commands
-
-#### Please Check must be your localhost:3001 for frontend
-
 ```bash
  npm install
  npm run start
